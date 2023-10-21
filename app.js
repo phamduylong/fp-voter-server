@@ -9,43 +9,43 @@ const routes = require("./routes/routes");
 const userRoutes = require("./routes/userRoutes");
 const compression = require("compression");
 
+const logger = require("./utilities/logger");
 
 /* MIDDLEWARES */
 
-app.use(compression()); 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(compression());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors());
 
-
-/* MIDDLEWARES */
-
 app.use(bodyParser.json());
 const mongoUri = process.env.MONGODB_URI;
 app.all('*', function (req, res, next) {
-    res.set({
-        "Connection": "Keep-Alive",
-        "Keep-Alive": "timeout=5, max=1000",
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*",
-   });
-    next();
+  res.set({
+    "Connection": "Keep-Alive",
+    "Keep-Alive": "timeout=5, max=1000",
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+  });
+  next();
 });
 app.use("/", routes);
 app.use("/user", userRoutes);
 const PORT = process.env.PORT || 8080;
 
-async function connectToDB() {
-  mongoose.connect(mongoUri)
+
+mongoose.connect(mongoUri)
   .then(() => {
-    console.info("Connected To Database!");
+    logger.info("Connected to MongoDB");
   })
   .catch((error) => {
-    console.error(error);
+    if (mongoUri === undefined || mongoUri === "") {
+      logger.fatal("Failed to connect to MongoDB. Failure reason: MONGODB_URI is missing from .env file.");
+    } else logger.fatal("Failed to connect to MongoDB. Failure reason: ", error);
   });
-  
-}
-connectToDB();
-module.exports = app.listen(PORT);
+
+module.exports = app.listen(PORT, () => {
+  logger.info(`Server is up and running on port ${PORT}`);
+});
 
