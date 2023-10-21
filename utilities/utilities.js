@@ -27,12 +27,18 @@ const checkJwtExpiration = async (req, res, next) => {
     }
 };
 async function deleteExpiredTokens() {
-    const tokens = await JWT.find({});
-    tokens.forEach(async (token) => {
-        if (token.expiryTime  < Date.now()) {
-            await JWT.deleteOne({ _id: tokens._id });
+    JWT.find({}).then((tokens) => {
+        for(const token of tokens) {
+            if(token.expiryTime < Date.now()) {
+                JWT.deleteOne({token: token.token}).catch((err) => {
+                    console.log("Failed to delete expired token: ", err);
+                });
+            }
         }
+    }).catch((err) => {
+        console.log("Failed to delete expried tokens: ", err);
     });
+    
 }
 async function checkInactiveToken(token) {
     await deleteExpiredTokens();

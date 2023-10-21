@@ -453,7 +453,7 @@ describe('Testing /id=:id endpoint', function () {
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(401);
-                expect(res.body).to.deep.equal({ message: "Token not provided" });
+                expect(res.body).to.deep.equal({ error: "You are not logged in." });
                 done();
             });
     });
@@ -465,7 +465,7 @@ describe('Testing /id=:id endpoint', function () {
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(401);
-                expect(res.body).to.deep.equal({ message: "Invalid token" });
+                expect(res.body).to.deep.equal({ error: "JWT malformed" });
                 done();
             });
     });
