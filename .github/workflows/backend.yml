@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-          working-directory: ./web-intf/backend/
           
     timeout-minutes: 5
 
@@ -27,7 +24,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: './web-intf/backend/package-lock.json'
 
     - name: Install Dependencies
       run: npm ci
@@ -51,9 +47,6 @@ jobs:
     needs: [build]
 
     runs-on: ubuntu-latest
-    defaults:
-      run:
-          working-directory: ./web-intf/backend/test
 
     timeout-minutes: 5
 
@@ -68,7 +61,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: './web-intf/backend/package-lock.json'
 
     - name: Install Dependencies
       run: npm ci
