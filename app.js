@@ -33,7 +33,8 @@ app.all('*', function (req, res, next) {
 app.use("/", routes);
 app.use("/user", userRoutes);
 const PORT = process.env.PORT || 8080;
-const ONE_DAY_IN_MILLISECONDS = 86400000;
+const ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
+console.log(ONE_DAY_IN_MILLISECONDS);
 
 // Clear old logs every 24 hours
 // Read every logs and parse timestamp, then filter out logs older than 24 hours
