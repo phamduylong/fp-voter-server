@@ -55,18 +55,18 @@ router.post('/login', async (req, res) => {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
                 const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
-                logger.info("Logged in successfully!");
+                logger.info(`Logged in as ${username}!`);
                 return res.status(200).send({ token: token, userId: user[0].id });
             } 
             logger.error("Incorrect Password!");
             return res.status(401).send({ error: "Incorrect Password!" });
         }
         else if (user.length > 1) {
-            logger.fatal("Your username was duplicated! Please contact admin as soon as possible to fix this issue.");
-            return res.status(500).send({ error: "Username duplicated!" });
+            logger.fatal(`Username ${username} was duplicated in the database!`);
+            return res.status(500).send({ error: "Your username was duplicated. Please contact an admin to fix this!" });
         } else if (user.length === 0) {
             logger.error(`Username ${username} was not found from database!`);
-            return res.status(400).send({ error: "Username was not found. Please register through the link below." });
+            return res.status(400).send({ error: "Your username was not found. Please register through the link below." });
         }
     } catch (error) {
         if(JWT_KEY === undefined || JWT_KEY === "") {
