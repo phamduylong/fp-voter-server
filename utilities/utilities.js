@@ -1,7 +1,7 @@
 const JWT = require('../models/JWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-
+const logger = require('./logger');
 dotenv.config();
 const JWT_KEY = process.env.JWT_SECRET;
 
@@ -23,6 +23,7 @@ const checkJwtExpiration = async (req, res, next) => {
         }
     } else {
         //token was not provided, user not logged in.
+        logger.error("JWT TOKEN IS MISSING");
         return res.status(401).json({ error: 'You are not logged in.' });
     }
 };
@@ -30,13 +31,14 @@ async function deleteExpiredTokens() {
     JWT.find({}).then((tokens) => {
         for(const token of tokens) {
             if(token.expiryTime < Date.now()) {
-                JWT.deleteOne({token: token.token}).catch((err) => {
-                    console.log("Failed to delete expired token: ", err);
+                JWT.deleteOne({_id: token._id}).catch((err) => {
+                    logger.error("Failed to delete expired token: ", err);
                 });
             }
         }
+        logger.info("Expired tokens deleted");
     }).catch((err) => {
-        console.log("Failed to delete expried tokens: ", err);
+        logger.error("Failed to delete expired tokens: ", err);
     });
     
 }
