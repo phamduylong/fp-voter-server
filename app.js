@@ -7,9 +7,9 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const routes = require("./routes/routes");
 const userRoutes = require("./routes/userRoutes");
+const candidateRoutes = require("./routes/candidateRoutes");
 const compression = require("compression");
 const path = require("path");
-
 const logger = require("./utilities/logger");
 /* MIDDLEWARES */
 
@@ -32,14 +32,14 @@ app.all('*', function (req, res, next) {
 });
 app.use("/", routes);
 app.use("/user", userRoutes);
+app.use("/candidate", candidateRoutes);
 const PORT = process.env.PORT || 8080;
 const ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
-console.log(ONE_DAY_IN_MILLISECONDS);
 
 // Clear old logs every 24 hours
 // Read every logs and parse timestamp, then filter out logs older than 24 hours
 // Write back remaining logs to file
-setInterval(() => {
+const clearLogsCallback = () => {
   fs.readFile(path.join(__dirname, "logFiles/api.log"), "utf8", (err, data) => {
     if (err) logger.warn("Failed to read old logs. Error: ", err);
     const lines = data.split("\r\n");
@@ -50,6 +50,13 @@ setInterval(() => {
       if (err) logger.warn("Failed to write remaining logs back after clearing old logs. Error: ", err);
     });
   });
+}
+
+// for ease of debugging, can be deleted later if necessary
+clearLogsCallback();
+
+setInterval(() => {
+  clearLogsCallback();
 }, ONE_DAY_IN_MILLISECONDS);
 
 mongoose.connect(mongoUri)

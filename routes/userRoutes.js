@@ -1,9 +1,10 @@
 const express = require("express");
 const userRouter = express.Router();
 const User = require('../models/User');
-const { checkJwtExpiration } = require('../utilities/utilities');
+const { authorizedOrdinaryUser } = require('../utilities/utilities');
 const logger = require('../utilities/logger');
-userRouter.get('/id=:id', checkJwtExpiration, async (req, res) => {
+
+userRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     const userId = req.params.id;
     if(userId === undefined || userId === null || userId < 0) {
         logger.error(`User id ${userId} is invalid!`);
