@@ -6,8 +6,22 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const {checkJwtExpiration, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
+const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
+const multer = require('multer');
 
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 dotenv.config();
+
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY
+    }
+});
+const BUCKET_NAME = process.env.BUCKET_NAME;
 const JWT_KEY = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
@@ -72,6 +86,56 @@ router.post('/logout', checkJwtExpiration, async (req, res) => {
         return res.sendStatus(200);
     } 
     return res.sendStatus(401);
+
+});
+
+router.post('/candidate/image', checkJwtExpiration ,upload.single('file'),async (req, res) => {
+    const image = req.file;
+    const name = req.body.user;
+
+    if(image === null){
+        return res.status(400).send({error: 'No image provided'});
+    }
+
+    const params = {
+        Bucket: BUCKET_NAME,
+        Key: name,
+        Body: image.buffer,
+        ContentType: 'image/jpeg',
+        ACL: 'public-read'
+    };
+
+
+    try {
+        const command = new PutObjectCommand(params);
+        await s3.send(command);
+        return res.status(200).send({message: 'Photo uploaded successfully'});
+    } catch (error) {
+        return res.status(400).send({error: 'Unable to upload photo'});
+
+    }
+
+});
+
+router.get('/candidate/image=:name', checkJwtExpiration ,async (req, res) => {
+
+    const params = {
+        Bucket: BUCKET_NAME,
+    };
+
+    const name = req.params.name;
+    s3.send(new ListObjectsV2Command(params))
+        .then((data) => {
+            const foundObject = data.Contents.find((object) => object.Key === name);
+            if (foundObject) {
+                const imageUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/${name}`;
+                return res.status(200).send({image: imageUrl});
+            }
+            return res.status(404).send({error: 'Image not found'});
+        })
+        .catch(() => {
+            res.status(500).send({error: 'Unable to find photo'});
+        });
 
 });
 
