@@ -8,7 +8,19 @@ const {authorizedOrdinaryUser, checkUserValidations} = require('../utilities/uti
 const bcrypt = require("bcrypt");
 const logger = require('../utilities/logger');
 
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 dotenv.config();
+
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY
+    }
+});
+const BUCKET_NAME = process.env.BUCKET_NAME;
 const JWT_KEY = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
