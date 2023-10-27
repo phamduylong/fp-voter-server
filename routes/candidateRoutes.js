@@ -31,7 +31,7 @@ candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
-candidateRouter.get('/all', authorizedOrdinaryUser, async (req, res) => {
+candidateRouter.get('/all', async (req, res) => {
     try {
         logger.debug("Getting all candidates");
         const candidates = await Candidate.find({}, "-_id name age message img id");
@@ -43,12 +43,17 @@ candidateRouter.get('/all', authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
-// TODO: Finish these routes below
-
+// Admin only functionalities
 candidateRouter.post('/create', authorizedAdmin, async (req, res) => {
     try {
         logger.debug("Creating a new candidate");
         const candidate = new Candidate(req.body);
+        const result = await candidate.save();
+        if(result) {
+            logger.info("Candidate created successfully! Details:", result);
+            return res.status(200).send({ message: "Candidate created successfully!" });
+        }
+        res.status(500).send({ error: "Failed to create a new candidate. Please try again!" });
 
     } catch (error) {
         logger.error("Failed to create a new candidate. Error: ", error);
@@ -56,11 +61,28 @@ candidateRouter.post('/create', authorizedAdmin, async (req, res) => {
     }
 });
 
-candidateRouter.put('/update/id:=id', authorizedAdmin, async (req, res) => {
+candidateRouter.put('/update/id=:id', authorizedAdmin, async (req, res) => {
+    logger.debug("Updating candidate with id:", req.params.id);
     const candidateId = req.params.id;
+    const newCandidateInfo = req.body;
+    const result = await Candidate.findOneAndUpdate({ id: Number(candidateId) }, newCandidateInfo, { new: true });
+    if(result) {
+        logger.info("Candidate updated successfully! Details:", result);
+        return res.status(200).send({ message: "Candidate updated successfully!" });
+    }
+    logger.error("Failed to update candidate with id:", candidateId);
+    return res.status(500).send({ error: "Failed to update candidate. Please try again!" });
 });
 
-candidateRouter.delete('/delete/id:=id', authorizedAdmin, async (req, res) => {
+candidateRouter.delete('/delete/id=:id', authorizedAdmin, async (req, res) => {
     const candidateId = req.params.id;
+    Candidate.deleteOne({ id: Number(candidateId) }).then(() => {
+        logger.info("Candidate deleted successfully! Id:", candidateId);
+        return res.status(200).send({ message: "Candidate deleted successfully!" });
+    }).catch((error) => {
+        logger.error("Failed to delete candidate with id:", candidateId, "Error: ", error);
+        return res.status(500).send({ error: error });
+    });
 });
+
 module.exports = candidateRouter;
