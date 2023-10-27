@@ -204,7 +204,7 @@ describe('Testing /login endpoint', function () {
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(400);
-                expect(res.body).to.deep.equal({ error: "User Not Found!" });
+                expect(res.body).to.deep.equal({ error: "Your username was not found. Please register through the link below." });
                 done();
             });
     });
@@ -418,7 +418,7 @@ describe('Testing /register endpoint', function () {
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(400);
-                expect(res.body).to.deep.equal({ error: "User already exists!" });
+                expect(res.body).to.deep.equal({ error: "Username has already been taken!" });
                 done();
             });
     });

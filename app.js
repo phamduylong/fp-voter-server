@@ -34,8 +34,8 @@ app.use("/", routes);
 app.use("/user", userRoutes);
 app.use("/candidate", candidateRoutes);
 const PORT = process.env.PORT || 8080;
-const ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
-
+const TWO_DAYS_IN_MILLISECONDS = 2 * 24 * 60 * 60 * 1000;
+const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 // Clear old logs every 24 hours
 // Read every logs and parse timestamp, then filter out logs older than 24 hours
 // Write back remaining logs to file
@@ -44,7 +44,7 @@ const clearLogsCallback = () => {
     if (err) logger.warn("Failed to read old logs. Error: ", err);
     const lines = data.split("\r\n");
     const filteredLines = lines.filter(line => {
-      return Date.now() - new Date(line.substring(1, 24)).getTime() < ONE_DAY_IN_MILLISECONDS;
+      return Date.now() - new Date(line.substring(1, 24)).getTime() < TWO_DAYS_IN_MILLISECONDS;
     });
     fs.writeFile(path.join(__dirname, "logFiles/api.log"), filteredLines.join("\r\n"), (err) => {
       if (err) logger.warn("Failed to write remaining logs back after clearing old logs. Error: ", err);
@@ -57,7 +57,7 @@ clearLogsCallback();
 
 setInterval(() => {
   clearLogsCallback();
-}, ONE_DAY_IN_MILLISECONDS);
+}, ONE_HOUR_IN_MILLISECONDS);
 
 mongoose.connect(mongoUri)
   .then(() => {
