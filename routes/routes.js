@@ -8,19 +8,7 @@ const {authorizedOrdinaryUser, checkUserValidations} = require('../utilities/uti
 const bcrypt = require("bcrypt");
 const logger = require('../utilities/logger');
 
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 dotenv.config();
-
-const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.ACCESS_KEY_ID,
-        secretAccessKey: process.env.SECRET_ACCESS_KEY
-    }
-});
-const BUCKET_NAME = process.env.BUCKET_NAME;
 const JWT_KEY = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
@@ -66,7 +54,7 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const token = jwt.sign({ userId: user[0].id, username: user[0].username }, JWT_KEY, { expiresIn: '1hr' });
+                const token = jwt.sign({ userId: user[0].id, username: user[0].username, isAdmin: user[0].isAdmin }, JWT_KEY, { expiresIn: '1hr' });
                 logger.info(`Logged in as ${username}!`);
                 return res.status(200).send({ token: token });
             } 

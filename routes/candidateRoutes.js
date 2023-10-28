@@ -1,8 +1,24 @@
 const express = require("express");
 const candidateRouter = express.Router();
+const multer = require('multer');
+const dotenv = require('dotenv');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const Candidate = require('../models/Candidate');
 const { authorizedOrdinaryUser, authorizedAdmin } = require('../utilities/utilities');
 const logger = require('../utilities/logger');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+dotenv.config();
+
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY
+    }
+});
+const BUCKET_NAME = process.env.BUCKET_NAME;
 
 candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     const candidateId = req.params.id;
@@ -44,16 +60,45 @@ candidateRouter.get('/all', async (req, res) => {
 });
 
 // Admin only functionalities
-candidateRouter.post('/create', authorizedAdmin, async (req, res) => {
+candidateRouter.post('/create', authorizedAdmin, upload.single('file'), async (req, res) => {
     try {
         logger.debug("Creating a new candidate");
-        const candidate = new Candidate(req.body);
-        const result = await candidate.save();
-        if(result) {
-            logger.info("Candidate created successfully! Details:", result);
-            return res.status(200).send({ message: "Candidate created successfully!" });
+        const image = req.file;
+        const name = req.body.name;
+        const age = req.body.age;
+        const message = req.body.message;
+        if (image === null || image === undefined || !name || !age || !message) {
+            // Handle the case where one or more variables are missing
+            logger.error(`One or more candidate fields are invalid`);
+            return res.status(400).json({ error: 'Candidate fields are invalid' }); // Return a 400 Bad Request status
         }
-        res.status(500).send({ error: "Failed to create a new candidate. Please try again!" });
+        const duplicateCandidate = await Candidate.find({ name: name, age: age, message: message });
+        if (duplicateCandidate.length === 0){
+            const currentTimestamp = Math.floor(Date.now() / 1000); // Get the current timestamp in seconds
+            const params = {
+                Bucket: BUCKET_NAME,
+                Key: `${name}_${currentTimestamp}`,
+                Body: image.buffer,
+                ContentType: 'image/jpeg',
+                ACL: 'public-read'
+            };
+            const command = new PutObjectCommand(params);
+            const imageSaved = await s3.send(command);
+            if(!imageSaved){
+                return res.status(400).send({error: 'Unable to upload image'});
+            }
+            logger.info("Image created successfully! Details:", imageSaved);
+            const candidate = new Candidate({name: name, age: age, message: message, img: `https://${BUCKET_NAME}.s3.amazonaws.com/${name}_${currentTimestamp}`});
+            const candidateSaved = await candidate.save();
+            if(candidateSaved) {
+                logger.info("Candidate created successfully! Details:", candidateSaved);
+                return res.status(200).send({ message: "Candidate created successfully!" });
+            }
+            res.status(500).send({ error: "Failed to create a new candidate. Please try again!" });
+        }
+        logger.error("Found duplicated candidate: ", duplicateCandidate);
+        return res.status(400).send({ error: "Candidate already exists!" });
+
 
     } catch (error) {
         logger.error("Failed to create a new candidate. Error: ", error);
