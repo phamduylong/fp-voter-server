@@ -4,7 +4,7 @@ const User = require('../models/User');
 const JWT = require('../models/JWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const {checkJwtExpiration, checkUserValidations} = require('../utilities/utilities');
+const {authorizedOrdinaryUser, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
 const logger = require('../utilities/logger');
 
@@ -54,9 +54,9 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
+                const token = jwt.sign({ userId: user[0].id, username: user[0].username }, JWT_KEY, { expiresIn: '1hr' });
                 logger.info(`Logged in as ${username}!`);
-                return res.status(200).send({ token: token, userId: user[0].id });
+                return res.status(200).send({ token: token });
             } 
             logger.error("Incorrect Password!");
             return res.status(401).send({ error: "Incorrect Password!" });
@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.post('/logout', checkJwtExpiration, async (req, res) => {
+router.post('/logout', authorizedOrdinaryUser, async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         const decodedToken = JSON.parse(atob(token.split(".")[1]));
