@@ -4,10 +4,9 @@ const User = require('../models/User');
 const JWT = require('../models/JWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const {checkJwtExpiration, checkUserValidations} = require('../utilities/utilities');
+const {authorizedOrdinaryUser, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
-const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
-const multer = require('multer');
+const logger = require('../utilities/logger');
 
 
 const storage = multer.memoryStorage();
@@ -28,6 +27,7 @@ router.post('/register', async (req, res) => {
     const username = req.body.username;
     let password = req.body.password;
     if(!checkUserValidations(username, password)){
+        logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
 
@@ -39,21 +39,26 @@ router.post('/register', async (req, res) => {
             const newUser = new User({ username: username, password: password, isAdmin: false });
             let userSaved = await newUser.save();
             if (userSaved != {}) {
-                return res.status(200).send({ message: "User saved successfully!" });
+                logger.info(`User registration successfully! Username: ${username}`);
+                return res.status(200).send({ message: "Your account was created successfully!" });
             }
-            return res.status(500).send({ error: "Unable To Create User!" });
+            logger.error("Unable To Create New User!");
+            return res.status(500).send({ error: "We were unable to create your account. Please try again or contact an administrator." });
         }
-        return res.status(400).send({ error: "User already exists!" });
+        logger.error(`Username ${username} has already been taken!`);
+        return res.status(400).send({ error: "Username has already been taken!" });
 
     } catch (error) {
-        return res.status(500).send({ error: "Unable To Create User!" });
+        logger.error("Unable To Create New User! Error: ", error);
+        return res.status(500).send({ error: "We were unable to create your account. Please try again or contact an administrator." });
     }
 })
 
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    if(!checkUserValidations(username, password)){
+    if(!checkUserValidations(username, password)) {
+        logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
     try {
@@ -61,83 +66,44 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const token = jwt.sign({ user: username }, JWT_KEY, { expiresIn: '1hr' });
-                return res.status(200).send({ token: token, userId: user[0].id });
+                const token = jwt.sign({ userId: user[0].id, username: user[0].username }, JWT_KEY, { expiresIn: '1hr' });
+                logger.info(`Logged in as ${username}!`);
+                return res.status(200).send({ token: token });
             } 
-                return res.status(401).send({ error: "Incorrect Password!" });
+            logger.error("Incorrect Password!");
+            return res.status(401).send({ error: "Incorrect Password!" });
         }
         else if (user.length > 1) {
-            return res.status(500).send({ error: "Username duplicated!" });
+            logger.fatal(`Username ${username} was duplicated in the database!`);
+            return res.status(500).send({ error: "Your username was duplicated. Please contact an admin to fix this!" });
         } else if (user.length === 0) {
-            return res.status(400).send({ error: "User Not Found!" });
+            logger.error(`Username ${username} was not found from database!`);
+            return res.status(400).send({ error: "Your username was not found. Please register through the link below." });
         }
     } catch (error) {
-        return res.status(500).send({ error: "Unable To Login!" });
+        if(JWT_KEY === undefined || JWT_KEY === "") {
+            logger.error("User log in failed. JWT_SECRET is missing from .env file!");
+        } else logger.error("Unable To Login! Error: ", error);
+        return res.status(500).send({ error: "We were unable to log you in. Please try again or contact an administrator." });
     }
 });
 
-router.post('/logout', checkJwtExpiration, async (req, res) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    const decodedToken = JSON.parse(atob(token.split(".")[1]));
-    const expiryTime = (decodedToken.exp * 1000);
-    const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
-    let tokenSaved = await inactiveToken.save();
-    if (tokenSaved != {}) {
-        return res.sendStatus(200);
-    } 
+router.post('/logout', authorizedOrdinaryUser, async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        const expiryTime = (decodedToken.exp * 1000);
+        const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
+        let tokenSaved = await inactiveToken.save();
+        if (tokenSaved != {}) {
+            logger.info("Logged out successfully!");
+            return res.sendStatus(200);
+        }
+    } catch(err) {
+        logger.error("An error occured while logging out! Error: ", err);
+    }
     return res.sendStatus(401);
 
 });
 
-router.post('/candidate/image', checkJwtExpiration ,upload.single('file'),async (req, res) => {
-    const image = req.file;
-    const name = req.body.user;
-
-    if(image === null){
-        return res.status(400).send({error: 'No image provided'});
-    }
-
-    const params = {
-        Bucket: BUCKET_NAME,
-        Key: name,
-        Body: image.buffer,
-        ContentType: 'image/jpeg',
-        ACL: 'public-read'
-    };
-
-
-    try {
-        const command = new PutObjectCommand(params);
-        await s3.send(command);
-        return res.status(200).send({message: 'Photo uploaded successfully'});
-    } catch (error) {
-        return res.status(400).send({error: 'Unable to upload photo'});
-
-    }
-
-});
-
-router.get('/candidate/image=:name', checkJwtExpiration ,async (req, res) => {
-
-    const params = {
-        Bucket: BUCKET_NAME,
-    };
-
-    const name = req.params.name;
-    s3.send(new ListObjectsV2Command(params))
-        .then((data) => {
-            const foundObject = data.Contents.find((object) => object.Key === name);
-            if (foundObject) {
-                const imageUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/${name}`;
-                return res.status(200).send({image: imageUrl});
-            }
-            return res.status(404).send({error: 'Image not found'});
-        })
-        .catch(() => {
-            res.status(500).send({error: 'Unable to find photo'});
-        });
-
-});
-
-//Put route to change user password
 module.exports = router;

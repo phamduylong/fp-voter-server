@@ -1,14 +1,13 @@
 const mongoose = require("mongoose");
 const Counter = require('./Counter')
-
 const Schema = mongoose.Schema;
 
 const candidateSchema = new Schema({
   name: { type: String, required: true },
   age: { type: Number, required: true },
-  id: { type: Number, required: true },
+  id: { type: Number, required: true, default: -1 },
   message: { type: String, required: true },
-  img: { data: Buffer, contentType: String }
+  img: { type: String, required: true}
 });
 
 candidateSchema.pre("save", function(next) {
