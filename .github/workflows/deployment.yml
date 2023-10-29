@@ -1,0 +1,24 @@
+on:
+  push:
+    branches: 
+        - main
+        - develop
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 10
+
+    environment: 
+      name: Deployment
+      url: https://fingerprint-voter-server.onrender.com
+
+    env:
+        deploy_url: ${{ secrets.DEPLOY_HOOK_URL }}
+
+    steps:
+      - name: Deploy
+        run: |
+            curl "$deploy_url"
