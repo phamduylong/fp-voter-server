@@ -11,8 +11,12 @@ const candidateRoutes = require("./routes/candidateRoutes");
 const compression = require("compression");
 const path = require("path");
 const logger = require("./utilities/logger");
-/* MIDDLEWARES */
+const redirectToHTTPS = require('express-http-to-https').redirectToHTTPS
 
+/* MIDDLEWARES */
+ 
+// localhost is excluded
+app.use(redirectToHTTPS([/localhost:(\d{4})/]));
 app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
