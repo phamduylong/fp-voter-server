@@ -11,12 +11,20 @@ const candidateRoutes = require("./routes/candidateRoutes");
 const compression = require("compression");
 const path = require("path");
 const logger = require("./utilities/logger");
-const redirectToHTTPS = require('express-http-to-https').redirectToHTTPS
+
+
+const PORT = process.env.PORT || 8080;
+const NODE_ENV = process.env.NODE_ENV || "development";
+const TWO_DAYS_IN_MILLISECONDS = 2 * 24 * 60 * 60 * 1000;
+const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
+
 
 /* MIDDLEWARES */
  
-// localhost is excluded
-app.use(redirectToHTTPS([/localhost:(\d{4})/]));
+app.enable('trust proxy');
+app.use((req, res, next) => {
+  (!req.secure && NODE_ENV !== "development") ? res.redirect(`https://${req.headers.host}${req.url}`) : next();
+});
 app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -37,9 +45,6 @@ app.all('*', function (req, res, next) {
 app.use("/", routes);
 app.use("/user", userRoutes);
 app.use("/candidate", candidateRoutes);
-const PORT = process.env.PORT || 8080;
-const TWO_DAYS_IN_MILLISECONDS = 2 * 24 * 60 * 60 * 1000;
-const ONE_HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 // Clear old logs every 24 hours
 // Read every logs and parse timestamp, then filter out logs older than 24 hours
 // Write back remaining logs to file
