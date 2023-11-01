@@ -73,33 +73,32 @@ candidateRouter.post('/create', authorizedAdmin, upload.single('file'), async (r
             return res.status(400).json({ error: 'Candidate fields are invalid' }); // Return a 400 Bad Request status
         }
         const duplicateCandidate = await Candidate.find({ name: name, age: age, message: message });
-        if (duplicateCandidate.length >= 0){
-            const currentTimestamp = Math.floor(Date.now() / 1000); // Get the current timestamp in seconds
-            const params = {
-                Bucket: BUCKET_NAME,
-                Key: `${name}_${currentTimestamp}`,
-                Body: image.buffer,
-                ContentType: 'image/jpeg',
-                ACL: 'public-read'
-            };
-            const command = new PutObjectCommand(params);
-            const imageSaved = await s3.send(command);
-            if(!imageSaved){
-                logger.error("Unable to upload image to s3");
-                return res.status(400).send({error: 'Unable to upload image'});
-            }
-            logger.info("Image created successfully! Details:", imageSaved);
-            const candidate = new Candidate({name: name, age: age, message: message, img: `https://${BUCKET_NAME}.s3.amazonaws.com/${name}_${currentTimestamp}`});
-            const candidateSaved = await candidate.save();
-            if(candidateSaved && duplicateCandidate.length === 0) {
+        const currentTimestamp = Math.floor(Date.now() / 1000); // Get the current timestamp in seconds
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: `${name}_${currentTimestamp}`,
+            Body: image.buffer,
+            ContentType: 'image/jpeg',
+            ACL: 'public-read'
+        };
+        const command = new PutObjectCommand(params);
+        const imageSaved = await s3.send(command);
+        if(!imageSaved){
+            logger.error("Unable to upload image to s3");
+            return res.status(400).send({error: 'Unable to upload image'});
+        }
+        logger.info("Image created successfully! Details:", imageSaved);
+        const candidate = new Candidate({name: name, age: age, message: message, img: `https://${BUCKET_NAME}.s3.amazonaws.com/${name}_${currentTimestamp}`});
+        const candidateSaved = await candidate.save();
+        if(candidateSaved) {
+            if(duplicateCandidate.length === 0){
                 logger.info("Candidate created successfully! Details:", candidateSaved);
                 return res.status(200).send({ message: "Candidate created successfully!" });
-            }else if(candidateSaved && duplicateCandidate.length > 0){
-                logger.warn("Created duplicated candidate. Details:", candidateSaved);
-                return res.status(307).send({ warning: "Created duplicated candidate!" });
             }
-            res.status(500).send({ error: "Failed to create a new candidate. Please try again!" });
+            logger.warn("Created duplicated candidate. Details:", candidateSaved);
+            return res.status(409).send({ warning: "Found an identical candidate. Please make sure this is not a mistake." });
         }
+        res.status(500).send({ error: "Failed to create a new candidate. Please try again!" });
     } catch (error) {
         logger.error("Failed to create a new candidate. Error: ", error);
         return res.status(500).send({ error: error });
@@ -126,7 +125,7 @@ candidateRouter.put('/update/id=:id', authorizedAdmin, upload.single('file'), as
         const imageSaved = await s3.send(command);
         if(!imageSaved){
             logger.error("Unable to upload image to s3");
-            return res.status(400).send({error: 'Unable to upload image'});
+            return res.status(500).send({error: 'Unable to upload image'});
         }
         logger.info("Candidate updated successfully! Details:", result);
         return res.status(200).send({ message: "Candidate updated successfully!" });
@@ -150,7 +149,7 @@ candidateRouter.delete('/delete/id=:id', authorizedAdmin, async (req, res) => {
         const imgDeleted = await s3.send(command);
         if(!imgDeleted){
             logger.error("Unable to delete image from s3");
-            return res.status(400).send({error: 'Unable to delete image'});
+            return res.status(500).send({error: 'Unable to delete image'});
         }
         logger.info(`Successfully deleted image with key ${imgUrl} from s3.`);
     }
@@ -159,8 +158,8 @@ candidateRouter.delete('/delete/id=:id', authorizedAdmin, async (req, res) => {
         logger.info("Candidate deleted successfully! Id:", candidateId);
         return res.status(200).send({ message: "Candidate deleted successfully!" });
     }
-        logger.error("Failed to delete candidate with id:", candidateId);
-        return res.status(500).send({ error: "Failed to delete candidate. Please try again!"  });
+    logger.error("Failed to delete candidate with id:", candidateId);
+    return res.status(500).send({ error: "Failed to delete candidate. Please try again!"  });
 });
 
 module.exports = candidateRouter;
