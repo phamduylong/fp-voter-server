@@ -51,6 +51,7 @@ app.use("/candidate", candidateRoutes);
 const clearLogsCallback = () => {
   fs.readFile(path.join(__dirname, "logFiles/api.log"), "utf8", (err, data) => {
     if (err) logger.warn("Failed to read old logs. Error: ", err);
+    if(!data) return;
     const lines = data.split("\r\n");
     const filteredLines = lines.filter(line => {
       return Date.now() - new Date(line.substring(1, 24)).getTime() < TWO_DAYS_IN_MILLISECONDS;
