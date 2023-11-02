@@ -85,7 +85,7 @@ candidateRouter.post('/create', authorizedAdmin, upload.single('file'), async (r
         const imageSaved = await s3.send(command);
         if(!imageSaved){
             logger.error("Unable to upload image to s3");
-            return res.status(400).send({error: 'Unable to upload image'});
+            return res.status(500).send({error: 'Unable to upload image'});
         }
         logger.info("Image created successfully! Details:", imageSaved);
         const candidate = new Candidate({name: name, age: age, message: message, img: `https://${BUCKET_NAME}.s3.amazonaws.com/${name}_${currentTimestamp}`});
@@ -137,10 +137,10 @@ candidateRouter.put('/update/id=:id', authorizedAdmin, upload.single('file'), as
 candidateRouter.delete('/delete/id=:id', authorizedAdmin, async (req, res) => {
     const candidateId = req.params.id;
     //Getting the image url from db before deleting it
-    const findImgUrl = await Candidate.findOne({ id: Number(candidateId) });
-    if(findImgUrl){
+    const candidateToDelete = await Candidate.findOne({ id: Number(candidateId) });
+    if(candidateToDelete){
         const imgRegex = /[^/]+$/;
-        const imgUrl = RegExp(imgRegex).exec(findImgUrl.img);
+        const imgUrl = RegExp(imgRegex).exec(candidateToDelete.img);
         const params = {
             Bucket: BUCKET_NAME,
             Key: imgUrl[0],
