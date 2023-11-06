@@ -47,7 +47,7 @@ candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
-candidateRouter.get('/all', async (req, res) => {
+candidateRouter.get('/all', authorizedOrdinaryUser, async (req, res) => {
     try {
         logger.debug("Getting all candidates");
         const candidates = await Candidate.find({}, "-_id name age message img id");
