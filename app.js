@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const routes = require("./routes/routes");
 const userRoutes = require("./routes/userRoutes");
+const resultRoutes = require("./routes/resultRoutes");
 const candidateRoutes = require("./routes/candidateRoutes");
 const compression = require("compression");
 const path = require("path");
@@ -45,6 +46,7 @@ app.all('*', function (req, res, next) {
 app.use("/", routes);
 app.use("/user", userRoutes);
 app.use("/candidate", candidateRoutes);
+app.use("/result", resultRoutes);
 // Clear old logs every 24 hours
 // Read every logs and parse timestamp, then filter out logs older than 24 hours
 // Write back remaining logs to file
