@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Counter = require('./Counter')
+const User = require('./User')
 const Schema = mongoose.Schema;
 
 const candidateSchema = new Schema({
@@ -10,6 +11,11 @@ const candidateSchema = new Schema({
   img: { type: String, required: true}
 });
 
+candidateSchema.pre("deleteOne",{ document: true, query: true }, function(next) {
+  User.updateMany({ candidateVotedId: this.getFilter()["id"] }, { $set: { candidateVotedId: null } })
+      .then(() => next())
+      .catch(error => next(error));
+});
 candidateSchema.pre("save", function(next) {
   Counter.findByIdAndUpdate({_id: 'candidateId'}, {$inc: { seq: 1} }).then((idCounter) => {
       this.id = idCounter.seq;
