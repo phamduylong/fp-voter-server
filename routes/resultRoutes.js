@@ -57,12 +57,17 @@ resultRouter.get('/candidateId=:id', async (req, res) => {
 
     if (!candidateId || isNaN(candidateId) || candidateId < 0) {
         logger.error(`Invalid candidate ID: ${candidateId}`);
-        return res.status(400).send({ error: "Invalid candidate ID. Please provide a valid candidate ID." });
+        return res.status(404).send({ error: "Invalid candidate ID. Please provide a valid candidate ID." });
     }
-
+    const castedId = Number(candidateId);
+    if(isNaN(castedId)){
+        logger.error(`Candidate ID ${castedId} is not a number`);
+        return res.status(400).send({error: "Candidate ID should be a number. Please provide a valid candidate ID."});
+    }
+    
     try {
         // Get all users who voted for the specified candidate
-        const votedUsers = await User.find({ candidateVotedId: parseInt(candidateId) });
+        const votedUsers = await User.find({ candidateVotedId: castedId });
         const candidateInfo = await Candidate.findOne({ id: candidateId });
 
         if (candidateInfo) {
@@ -75,7 +80,7 @@ resultRouter.get('/candidateId=:id', async (req, res) => {
             return res.status(200).json(response);
         }
         logger.info(`Candidate with ID ${candidateId} does not exist!`);
-        res.status(400).json({ error: `Candidate with ID ${candidateId} does not exist!` });
+        res.status(404).json({ error: `Candidate with ID ${candidateId} does not exist!` });
     } catch (error) {
         logger.error("An error occurred while getting the votes for the specific candidate, details:", error);
         res.status(500).json({ error: error });
