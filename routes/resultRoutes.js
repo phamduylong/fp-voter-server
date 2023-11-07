@@ -2,10 +2,9 @@ const express = require('express');
 const resultRouter = express.Router();
 const User = require('../models/User');
 const Candidate = require('../models/Candidate');
-const { authorizedOrdinaryUser } = require('../utilities/utilities');
 const logger = require('../utilities/logger');
 
-resultRouter.get('/all', authorizedOrdinaryUser, async (req, res) => {
+resultRouter.get('/all', async (req, res) => {
     try {
         logger.info("Retrieving the votes voted by the user");
 
@@ -52,7 +51,7 @@ resultRouter.get('/all', authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
-resultRouter.get('/candidateId=:id', authorizedOrdinaryUser, async (req, res) => {
+resultRouter.get('/candidateId=:id', async (req, res) => {
     const candidateId = req.params.id;
     logger.info('Requested result for candidate with ID:', candidateId);
 
