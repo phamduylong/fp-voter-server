@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 
 const candidateSchema = new Schema({
   name: { type: String, required: true },
-  age: { type: Number, required: true },
   id: { type: Number, required: true, default: -1 },
   message: { type: String, required: true },
   img: { type: String, required: true}

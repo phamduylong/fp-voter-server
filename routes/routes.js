@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
             password = await bcrypt.hash(password, salt);
             const newUser = new User({ username: username, password: password, isAdmin: false });
             let userSaved = await newUser.save();
-            if (userSaved !== {}) {
+            if (userSaved != {}) {
                 logger.info(`User registration successfully! Username: ${username}`);
                 return res.status(200).send({ message: "Your account was created successfully!" });
             }
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
-                const token = jwt.sign({userId: user[0].id, username: user[0].username}, JWT_KEY, {expiresIn: '1hr'});
+                const token = jwt.sign({userId: user[0].id, username: user[0].username, isAdmin: user[0].isAdmin}, JWT_KEY, {expiresIn: '1hr'});
                 logger.info(`Logged in as ${username}!`);
                 return res.status(200).send({ token: token });
             }
@@ -85,7 +85,7 @@ router.post('/logout', authorizedOrdinaryUser, async (req, res) => {
         const expiryTime = (decodedToken.exp * 1000);
         const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
         let tokenSaved = await inactiveToken.save();
-        if (tokenSaved !== {}) {
+        if (tokenSaved != {}) {
             logger.info("Logged out successfully!");
             return res.sendStatus(200);
         }
