@@ -27,7 +27,7 @@ userRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
             return res.status(200).send( result );
         }
         logger.error("Couldn't find user with id: ", userId);
-        return res.status(400).send({ error: "User Not Found!" });
+        return res.status(404).send({ error: "User Not Found!" });
     } catch (error) {
         logger.error("Failed to get user information. Error: ", error);
         return res.status(500).send({ error: error });
@@ -63,7 +63,7 @@ userRouter.get("/candidateVoted/id=:id", authorizedOrdinaryUser, async (req, res
             return res.status(204).send({ });
         }
         logger.error("Couldn't find user with id: ", userId);
-        return res.status(400).send({ error: "User Not Found!" });
+        return res.status(404).send({ error: "User Not Found!" });
     } catch (error) {
         logger.error("Failed to get user information. Error: ", error);
         return res.status(500).send({ error: error });
