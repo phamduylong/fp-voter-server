@@ -33,8 +33,8 @@ candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
             const result = {
                 id: candidate[0].id,
                 name: candidate[0].name,
-                age: candidate[0].age,
-                message: candidate[0].message
+                message: candidate[0].message,
+                img: candidate[0].img
             };
             logger.info("Candidate found successfully! Details:", result);
             return res.status(200).send(result);

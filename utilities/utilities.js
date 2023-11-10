@@ -18,6 +18,7 @@ const authorizedOrdinaryUser = async (req, res, next) => {
             }
             next();
         } catch (err) {
+            logger.error("Failed to verify token. Error: ", err);
             // in theory, this should not happen for ordinary users
             return res.status(401).json({ error: 'JWT malformed' });
         }
