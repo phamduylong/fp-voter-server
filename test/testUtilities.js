@@ -12,10 +12,27 @@ const createTestUser = async () =>{
     await newUser.save();
 }
 
+const createTestAdmin = async () =>{
+    const username = "backendUnitTestAdmin";
+    let password = "unitTest#0001";
+    const salt = await bcrypt.genSalt();
+    password = await bcrypt.hash(password, salt);
+    const newUser = new User({ username: username, password: password, isAdmin: true });
+    await newUser.save();
+}
+
+
 
 const deleteTestUser = async () =>{
    await User.findOneAndRemove({username: "backendUnitTest"});
 
 }
 
-module.exports = {createTestUser,deleteTestUser}
+const deleteTestAdmin = async () =>{
+    await User.findOneAndRemove({username: "backendUnitTestAdmin"});
+
+}
+
+
+
+module.exports = {createTestUser,createTestAdmin,deleteTestUser,deleteTestAdmin}
