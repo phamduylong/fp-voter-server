@@ -26,17 +26,19 @@ resultRouter.get('/all', async (req, res) => {
         // Get candidate information for the candidates with votes
         const allCandidates = await Candidate.find();
 
+        let allVotes = 0;
+        Array.from(candidateVoteCount.values()).forEach(n => {allVotes += n});
+
         // Process the results
         const votingResults = allCandidates.map(candidate => ({
             id: candidate.id,
             name: candidate.name,
             votesReceived: candidateVoteCount.get(candidate.id) || 0,
+            votesPercentage: ((candidateVoteCount.get(candidate.id) || 0) / allVotes * 100).toFixed(2) + "%",
         }));
 
-        votingResults.sort((firstCandidate, secondCandidate) => firstCandidate.id - secondCandidate.id);
-        let allVotes = 0;
-        Array.from(candidateVoteCount.values()).forEach(n => {allVotes += n});
-
+        // sort candidates by name
+        votingResults.sort((firstCandidate, secondCandidate) => firstCandidate.name.localeCompare(secondCandidate.name));
 
         const response = {
             votes: allVotes,
