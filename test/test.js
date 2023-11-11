@@ -424,7 +424,7 @@ describe('Testing /register endpoint', function () {
     });
 });
 
-describe('Testing /id=:id endpoint', function () {
+describe('Testing /user endpoint', function () {
     before(async function () {
         await createTestUser();
     });
@@ -493,6 +493,42 @@ describe('Testing /id=:id endpoint', function () {
                 done();
             });
     });
+
+    it('Get candidate id which was voted by a user', function (done) {
+        chai.request(app)
+            .get('/user/candidateVoted/id=22')
+            .set("Authorization", `Bearer ${token}`)
+            .end(function (err, res) {
+                expect(err).to.be.null;
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
+
+    it('Get candidate id which was voted by a user with invalid id', function (done) {
+        chai.request(app)
+            .get('/user/candidateVoted/id=null')
+            .set("Authorization", `Bearer ${token}`)
+            .end(function (err, res) {
+                expect(err).to.be.null;
+                expect(res).to.have.status(400);
+                expect(res.body).to.deep.equal({ error: "User id is invalid!" });
+                done();
+            });
+    });
+
+    it('Get candidate id which was voted by a user with id does not exist', function (done) {
+        chai.request(app)
+            .get('/user/candidateVoted/id=35533')
+            .set("Authorization", `Bearer ${token}`)
+            .end(function (err, res) {
+                expect(err).to.be.null;
+                expect(res).to.have.status(404);
+                expect(res.body).to.deep.equal({ error: "User Not Found!"});
+                done();
+            });
+    });
+
 });
 
 
