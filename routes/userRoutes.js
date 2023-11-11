@@ -36,7 +36,7 @@ userRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
 
 userRouter.get("/candidateVoted/id=:id", authorizedOrdinaryUser, async (req, res) => {
     const userId = req.params.id;
-    if(userId === undefined || userId === null || userId < 0) {
+    if(userId === undefined || userId === null || userId < 0 || isNaN(userId)) {
         logger.error(`User id ${userId} is invalid!`);
         return res.status(400).send({ error: "User id is invalid!" });
     }
