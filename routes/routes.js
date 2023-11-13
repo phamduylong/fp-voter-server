@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
         logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
-    if(fingerprintId === undefined || fingerprintId === null || fingerprintId < 0 || isNaN(fingerprintId) ){
+    if(fingerprintId === undefined || fingerprintId === null || fingerprintId < 0 || isNaN(fingerprintId) || fingerprintId > 162){
         logger.error(`Fingerprint id ${fingerprintId} is invalid!`);
         return res.status(400).send({ error: "Fingerprint Id field is empty!" });
     }
