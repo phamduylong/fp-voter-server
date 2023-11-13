@@ -11,7 +11,7 @@ const createTestUser = async () =>{
     const isUserExists = await User.find({username: username});
     if (isUserExists.length === 0){
         const newUser = new User({ username: username, password: password, isAdmin: false });
-        await newUser.save();
+        newUser.save().then(() => console.log("User created for testing!")).catch(err => console.log(err));
     }
 }
 
@@ -22,20 +22,20 @@ const createTestAdmin = async () =>{
     password = await bcrypt.hash(password, salt);
     const isUserExists = await User.find({username: username});
     if (isUserExists.length === 0){
-        const newUser = new User({ username: username, password: password, isAdmin: false });
-        await newUser.save();
+        const newUser = new User({ username: username, password: password, isAdmin: true });
+        newUser.save().then(() => console.log("User created for testing!")).catch(err => console.log(err));
     }
 }
 
 
 
 const deleteTestUser = async () =>{
-   await User.findOneAndRemove({username: "backendUnitTest"});
+   User.findOneAndRemove({username: "backendUnitTest"}).then(() => console.log("Cleaned up dummy test users!")).catch(err => console.log(err));
 
 }
 
 const deleteTestAdmin = async () =>{
-    await User.findOneAndRemove({username: "backendUnitTestAdmin"});
+    await User.findOneAndRemove({username: "backendUnitTestAdmin"}).then(() => console.log("Cleaned up dummy test admins!")).catch(err => console.log(err));
 
 }
 
