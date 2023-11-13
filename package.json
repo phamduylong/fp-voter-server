@@ -10,7 +10,7 @@
     "build": "node app.js",
     "dev": "nodemon app.js",
     "production": "pm2-runtime app.js -i max",
-    "test": "mocha test/test.js --verbose --exit"
+    "test": "mocha test/test.js --verbose --bail --exit"
   },
   "author": "",
   "license": "ISC",
