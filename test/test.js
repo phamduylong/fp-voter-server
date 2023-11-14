@@ -11,11 +11,11 @@ chai.use(chaiHttp);
 
 describe('Testing /login endpoint', function () {
     before(async function () {
-        await createTestUser();
+        return createTestUser().then(() => {console.log("Test user was created!")}).catch(err => console.log(err));
     });
 
     after(async function () {
-        await deleteTestUser();
+        return deleteTestUser().then(() => {console.log("Test user was deleted!");}).catch(err => console.log(err));
     });
 
     it(`1. Login with valid credentials`, function (done) {
@@ -28,8 +28,6 @@ describe('Testing /login endpoint', function () {
             .post('/login')
             .send(user)
             .end(function (err, res) {
-                console.log(err);
-                console.log(res.body);
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 done();
@@ -428,11 +426,11 @@ describe('13. Testing /register endpoint', function () {
 
 describe('Testing /user endpoint', function () {
     before(async function () {
-        await createTestUser();
+        return createTestUser().then(() => console.log("Test user created for testing!")).catch(err => console.log(err));;
     });
 
     after(async function () {
-        await deleteTestUser();
+        return deleteTestUser().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));;
     });
 
     const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '30s' });
@@ -536,11 +534,11 @@ describe('Testing /user endpoint', function () {
 
 describe('Testing /result endpoint', function () {
     before(async function () {
-        await createTestUser();
+        return createTestUser().then(() => console.log("Test user created for testing!")).catch(err => console.log(err));;
     });
 
     after(async function () {
-        await deleteTestUser();
+        return deleteTestUser().then(() => console.log("Test user cleaned up!")).catch(err => console.log(err));;
     });
 
 
@@ -587,13 +585,11 @@ describe('Testing /result endpoint', function () {
 
 describe('Testing /candidate endpoint', function () {
     before(async function () {
-        await createTestUser();
-        await createTestAdmin();
+        return createTestAdmin().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));;
     });
 
     after(async function () {
-        await deleteTestUser();
-        await deleteTestAdmin();
+        return deleteTestAdmin().then(() => console.log("Admin dummy was deleted!")).catch(err => console.log(err));;
     });
 
     let testCandidateId = 0;

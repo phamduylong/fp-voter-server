@@ -11,7 +11,7 @@ const createTestUser = async () =>{
     const isUserExists = await User.find({username: username});
     if (isUserExists.length === 0){
         const newUser = new User({ username: username, password: password, isAdmin: false });
-        newUser.save().then(() => console.log("User created for testing!")).catch(err => console.log(err));
+        return newUser.save();
     } else {
         console.error("Test user already existed before test cases are run!");
     }
@@ -25,7 +25,7 @@ const createTestAdmin = async () =>{
     const isUserExists = await User.find({username: username});
     if (isUserExists.length === 0){
         const newUser = new User({ username: username, password: password, isAdmin: true });
-        newUser.save().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));
+        return newUser.save();
     } else {
         console.error("Admin user already existed before test cases are run!");
     }
@@ -34,12 +34,11 @@ const createTestAdmin = async () =>{
 
 
 const deleteTestUser = async () =>{
-   User.deleteMany({username: "backendUnitTest"}).then(() => console.log("Cleaned up dummy test users!")).catch(err => console.log(err));
+   return User.deleteMany({username: "backendUnitTest"});
 }
 
 const deleteTestAdmin = async () =>{
-    await User.deleteMany({username: "backendUnitTestAdmin"}).then(() => console.log("Cleaned up dummy test admins!")).catch(err => console.log(err));
-
+    return User.deleteMany({username: "backendUnitTestAdmin"});
 }
 
 
