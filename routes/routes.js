@@ -57,28 +57,18 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const fingerprintId = req.body.fingerprintId;
-    const sensorId = req.body.sensorId;
     if(!checkUserValidations(username, password)) {
         logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
-    if(fingerprintId === undefined || fingerprintId === null || fingerprintId < 0 || isNaN(fingerprintId) || fingerprintId > 161){
-        logger.error(`Fingerprint id ${fingerprintId} is invalid!`);
-        return res.status(400).send({ error: "Fingerprint Id field is empty!" });
-    }
-    if(sensorId === undefined || sensorId === null || sensorId < 0 || isNaN(sensorId) ){
-        logger.error(`Sensor id ${sensorId} is invalid!`);
-        return res.status(400).send({ error: "Sensor Id field is empty!" });
-    }
     try {
-        const user = await User.find({ username: username, fingerprintId: fingerprintId, sensorId: sensorId });
+        const user = await User.find({ username: username });
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
                 const token = jwt.sign({userId: user[0].id, username: user[0].username, isAdmin: user[0].isAdmin}, JWT_KEY, {expiresIn: '1hr'});
                 logger.info(`Logged in as ${username}!`);
-                return res.status(200).send({ token: token });
+                return res.status(200).send({ fingerprintId: user[0].fingerprintId, sensorId: user[0].sensorId, token: token });
             }
             logger.error("Incorrect Password!");
             return res.status(401).send({ error: "Incorrect Password!" });
