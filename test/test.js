@@ -433,8 +433,8 @@ describe('Testing /user endpoint', function () {
         await deleteTestUser();
     });
 
-    const token = jwt.sign({ user: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
-    const invalidToken = jwt.sign({ user: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '0s' });
+    const token = jwt.sign({ userId: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
+    const invalidToken = jwt.sign({ userId: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '0s' });
 
     it('Get user details with valid credentials', function (done) {
         chai.request(app)
@@ -597,8 +597,8 @@ describe('Testing /candidate endpoint', function () {
     let testCandidateId = 0;
     let testDuplicatedCandidateId = 0;
 
-    const token = jwt.sign({ user: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
-    const adminToken = jwt.sign({ user: "backendUnitTestAdmin" }, process.env.JWT_SECRET, { expiresIn: '5s' });
+    const token = jwt.sign({ userId: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
+    const adminToken = jwt.sign({ userId: "backendUnitTestAdmin" }, process.env.JWT_SECRET, { expiresIn: '5s' });
 
     it('Get all candidate information', function (done) {
         chai.request(app)

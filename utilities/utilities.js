@@ -49,16 +49,18 @@ const authorizedAdmin = async (req, res, next) => {
             if (tokenIsInactive || currentTokenExpired) {
                 return res.status(401).json({ error: 'Session has expired. Please log in again.' });
             }
-            if(decodedToken.userId !== 0 && decodedToken.userId !== undefined && decodedToken.userId !== null) {
-                User.find({ id: decodedToken.userId }).then((user) => {
-                    if(!user[0].isAdmin) {
-                        return res.status(403).json({ error: 'You are not authorized to access this page.' });
-                    }
-                }).catch((err) => {
-                    logger.error("Failed to get user information. Error: ", err);
-                    return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
-                });
+            if(decodedToken.userId < 0 || decodedToken.userId === undefined || decodedToken.userId === null) {
+                logger.error("User ID is missing from token!");
+                return res.status(401).json({ error: 'Session token was malformed. Please log in again.' });
             }
+            User.find({ id: decodedToken.userId }).then((user) => {
+                if(!user[0].isAdmin) {
+                    return res.status(403).json({ error: 'You are not authorized to access this page.' });
+                }
+            }).catch((err) => {
+                logger.error("Failed to get user information. Error: ", err);
+                return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
+            });
             next();
         } catch (err) {
             // in theory, this should not happen for ordinary users
