@@ -6,4 +6,4 @@ const JWTSchema = new Schema({
   });
   
 
-module.exports = mongoose.model("JWT", JWTSchema);
+module.exports = mongoose.model("ExpiredTokens", JWTSchema);

@@ -2,12 +2,12 @@ const express = require("express");
 const userRouter = express.Router();
 const User = require('../models/User');
 const Candidate = require('../models/Candidate');
-const { authorizedOrdinaryUser } = require('../utilities/utilities');
+const { authorizedOrdinaryUser, authorizedAdmin, numberIsNegativeOrEmpty } = require('../utilities/utilities');
 const logger = require('../utilities/logger');
 
-userRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
+userRouter.get('/id=:id', authorizedAdmin, async (req, res) => {
     const userId = req.params.id;
-    if(userId === undefined || userId === null || userId < 0) {
+    if(numberIsNegativeOrEmpty(userId)) {
         logger.error(`User id ${userId} is invalid!`);
         return res.status(400).send({ error: "User id is invalid!" });
     }
@@ -34,9 +34,9 @@ userRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
-userRouter.get("/candidateVoted/id=:id", authorizedOrdinaryUser, async (req, res) => {
-    const userId = req.params.id;
-    if(userId === undefined || userId === null || userId < 0 || isNaN(userId)) {
+userRouter.get("/candidateVoted", authorizedOrdinaryUser, async (req, res) => {
+    const userId = req.userId;
+    if(numberIsNegativeOrEmpty(userId)) {
         logger.error(`User id ${userId} is invalid!`);
         return res.status(400).send({ error: "User id is invalid!" });
     }
