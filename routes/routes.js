@@ -16,9 +16,19 @@ const JWT_KEY = process.env.JWT_SECRET;
 router.post('/register', async (req, res) => {
     const username = req.body.username;
     let password = req.body.password;
+    const fingerprintId = req.body.fingerprintId;
+    const sensorId = req.body.sensorId;
     if(!checkUserValidations(username, password)){
         logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
+    }
+    if(fingerprintId === undefined || fingerprintId === null || fingerprintId < 0 || isNaN(fingerprintId) || fingerprintId > 161){
+        logger.error(`Fingerprint id ${fingerprintId} is invalid!`);
+        return res.status(400).send({ error: "Fingerprint Id field is empty!" });
+    }
+    if(sensorId === undefined || sensorId === null || sensorId < 0 || isNaN(sensorId) ){
+        logger.error(`Sensor id ${sensorId} is invalid!`);
+        return res.status(400).send({ error: "Sensor Id field is empty!" });
     }
 
     try {
@@ -26,7 +36,7 @@ router.post('/register', async (req, res) => {
         if (user.length === 0) {
             const salt = await bcrypt.genSalt();
             password = await bcrypt.hash(password, salt);
-            const newUser = new User({ username: username, password: password, isAdmin: false });
+            const newUser = new User({ username: username, password: password, isAdmin: false, fingerprintId: fingerprintId, sensorId: sensorId });
             let userSaved = await newUser.save();
             if (userSaved != {}) {
                 logger.info(`User registration successfully! Username: ${username}`);
@@ -47,12 +57,22 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
+    const fingerprintId = req.body.fingerprintId;
+    const sensorId = req.body.sensorId;
     if(!checkUserValidations(username, password)) {
         logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
     }
+    if(fingerprintId === undefined || fingerprintId === null || fingerprintId < 0 || isNaN(fingerprintId) || fingerprintId > 161){
+        logger.error(`Fingerprint id ${fingerprintId} is invalid!`);
+        return res.status(400).send({ error: "Fingerprint Id field is empty!" });
+    }
+    if(sensorId === undefined || sensorId === null || sensorId < 0 || isNaN(sensorId) ){
+        logger.error(`Sensor id ${sensorId} is invalid!`);
+        return res.status(400).send({ error: "Sensor Id field is empty!" });
+    }
     try {
-        const user = await User.find({ username: username })
+        const user = await User.find({ username: username, fingerprintId: fingerprintId, sensorId: sensorId });
         if (user.length === 1) {
             const match = await bcrypt.compare(password, user[0].password);
             if (match) {
@@ -67,8 +87,8 @@ router.post('/login', async (req, res) => {
             logger.fatal(`Username ${username} was duplicated in the database!`);
             return res.status(500).send({ error: "Your username was duplicated. Please contact an admin to fix this!" });
         } else if (user.length === 0) {
-            logger.error(`Username ${username} was not found from database!`);
-            return res.status(400).send({ error: "Your username was not found. Please register through the link below." });
+            logger.error(`One or more user fields do not match with the database`);
+            return res.status(400).json({ error: "Users are required to have username, fingerprintId and sensorId. At least one of these do not match with the database ." });
         }
     } catch (error) {
         if(JWT_KEY === undefined || JWT_KEY === "") {
