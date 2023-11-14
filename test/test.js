@@ -18,7 +18,7 @@ describe('Testing /login endpoint', function () {
         await deleteTestUser();
     });
 
-    it('Login with valid credentials', function (done) {
+    it(`1. Login with valid credentials`, function (done) {
         const user = {
             username: "backendUnitTest",
             password: "unitTest#0001"
@@ -28,13 +28,15 @@ describe('Testing /login endpoint', function () {
             .post('/login')
             .send(user)
             .end(function (err, res) {
+                console.log(err);
+                console.log(res.body);
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 done();
             });
     });
 
-    it('Login with whitespace character exist in username', function (done) {
+    it(`2. Login with whitespace character exist in username`, function (done) {
         const user = {
             username: "random User",
             password: "unitTest#0001"
@@ -51,7 +53,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with number starts first in username', function (done) {
+    it('3. Login with number starts first in username', function (done) {
         const user = {
             username: "3randomUser",
             password: "unitTest#0001"
@@ -68,7 +70,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with username too short', function (done) {
+    it('4. Login with username too short', function (done) {
         const user = {
             username: "ran",
             password: "unitTest#0001"
@@ -85,7 +87,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with username too long', function (done) {
+    it('5. Login with username too long', function (done) {
         const user = {
             username: "randomUsernameabc123def456",
             password: "unitTest#0001"
@@ -102,7 +104,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with password too short', function (done) {
+    it('6. Login with password too short', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -120,7 +122,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with password too long', function (done) {
+    it('7. Login with password too long', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -138,7 +140,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with number in password missing', function (done) {
+    it('8. Login with number in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -156,7 +158,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with special character in password missing', function (done) {
+    it('9. Login with special character in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -174,7 +176,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with capital letter in password missing', function (done) {
+    it('10. Login with capital letter in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -192,7 +194,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with incorrect username', function (done) {
+    it('11. Login with incorrect username', function (done) {
         const user = {
             username: "testuser9000",
             password: "27190670Kendrick#"
@@ -209,7 +211,7 @@ describe('Testing /login endpoint', function () {
             });
     });
 
-    it('Login with incorrect password', function (done) {
+    it('12. Login with incorrect password', function (done) {
         const user = {
             username: "testuser8000",
             password: "fsfasasdF#4"
@@ -227,7 +229,7 @@ describe('Testing /login endpoint', function () {
     });
 });
 
-describe('Testing /register endpoint', function () {
+describe('13. Testing /register endpoint', function () {
     after(async function () {
         await deleteTestUser();
     });
@@ -248,7 +250,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with whitespace character exist in username', function (done) {
+    it('14. Register with whitespace character exist in username', function (done) {
         const user = {
             username: "random User",
             password: "unitTest#0001"
@@ -265,7 +267,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with number starts first in username', function (done) {
+    it('15. Register with number starts first in username', function (done) {
         const user = {
             username: "3randomUser",
             password: "unitTest#0001"
@@ -282,7 +284,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with username too short', function (done) {
+    it('16. Register with username too short', function (done) {
         const user = {
             username: "ran",
             password: "unitTest#0001"
@@ -299,7 +301,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with username too long', function (done) {
+    it('17. Register with username too long', function (done) {
         const user = {
             username: "randomUsernameabc123def456",
             password: "unitTest#0001"
@@ -316,7 +318,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with password length too short', function (done) {
+    it('18. Register with password length too short', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -334,7 +336,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with password length too long', function (done) {
+    it('19. Register with password length too long', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -352,7 +354,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with number in password missing', function (done) {
+    it('20 .Register with number in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -370,7 +372,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with special character in password missing', function (done) {
+    it('21. Register with special character in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -388,7 +390,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with capital letter in password missing', function (done) {
+    it('22. Register with capital letter in password missing', function (done) {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
@@ -406,7 +408,7 @@ describe('Testing /register endpoint', function () {
             });
     });
 
-    it('Register with duplicate username', function (done) {
+    it('23. Register with duplicate username', function (done) {
         const user = {
             username: "backendUnitTest",
             password: "unitTest#0001"
@@ -433,10 +435,10 @@ describe('Testing /user endpoint', function () {
         await deleteTestUser();
     });
 
-    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
+    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '30s' });
     const invalidToken = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '0s' });
 
-    it('Get user details with valid credentials', function (done) {
+    it('24. Get user details with valid credentials', function (done) {
         chai.request(app)
             .get('/user/id=1')
             .set("Authorization", `Bearer ${token}`)
@@ -447,7 +449,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get user details with JWT missing', function (done) {
+    it('25. Get user details with JWT missing', function (done) {
         chai.request(app)
             .get('/user/id=1')
             .end(function (err, res) {
@@ -458,7 +460,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get user details with invalid JWT', function (done) {
+    it('26. Get user details with invalid JWT', function (done) {
         chai.request(app)
             .get('/user/id=1')
             .set("Authorization", `Bearer ${invalidToken}`)
@@ -470,7 +472,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get user details with negative userID', function (done) {
+    it('27. Get user details with negative userID', function (done) {
         chai.request(app)
             .get('/user/id=-1')
             .set("Authorization", `Bearer ${token}`)
@@ -482,7 +484,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get user details with userID missing from the db', function (done) {
+    it('28. Get user details with userID missing from the db', function (done) {
         chai.request(app)
             .get('/user/id=1000')
             .set("Authorization", `Bearer ${token}`)
@@ -494,7 +496,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get candidate id which was voted by a user', function (done) {
+    it('29. Get candidate id which was voted by a user', function (done) {
         chai.request(app)
             .get('/user/candidateVoted/id=22')
             .set("Authorization", `Bearer ${token}`)
@@ -505,7 +507,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get candidate id which was voted by a user with invalid id', function (done) {
+    it('30. Get candidate id which was voted by a user with invalid id', function (done) {
         chai.request(app)
             .get('/user/candidateVoted/id=null')
             .set("Authorization", `Bearer ${token}`)
@@ -517,7 +519,7 @@ describe('Testing /user endpoint', function () {
             });
     });
 
-    it('Get candidate id which was voted by a user with id does not exist', function (done) {
+    it('31. Get candidate id which was voted by a user with id does not exist', function (done) {
         chai.request(app)
             .get('/user/candidateVoted/id=35533')
             .set("Authorization", `Bearer ${token}`)
@@ -542,7 +544,7 @@ describe('Testing /result endpoint', function () {
     });
 
 
-    it('Get all voting results', function (done) {
+    it('32. Get all voting results', function (done) {
         chai.request(app)
             .get('/result/all')
             .end(function (err, res) {
@@ -551,7 +553,7 @@ describe('Testing /result endpoint', function () {
                 done();
             });
     });
-    it('Get voting results for a specific candidate', function (done) {
+    it('33. Get voting results for a specific candidate', function (done) {
         chai.request(app)
             .get('/result/candidateId=1')
             .end(function (err, res) {
@@ -560,7 +562,7 @@ describe('Testing /result endpoint', function () {
                 done();
             });
     });
-    it('Get voting results for a specific candidate with invalid ID', function (done) {
+    it('34. Get voting results for a specific candidate with invalid ID', function (done) {
         chai.request(app)
             .get('/result/candidateId=null')
             .end(function (err, res) {
@@ -570,7 +572,7 @@ describe('Testing /result endpoint', function () {
                 done();
             });
     });
-    it('Get voting results for a specific candidate with ID does not exist', function (done) {
+    it('35. Get voting results for a specific candidate with ID does not exist', function (done) {
         chai.request(app)
             .get('/result/candidateId=52335')
             .end(function (err, res) {
@@ -597,10 +599,10 @@ describe('Testing /candidate endpoint', function () {
     let testCandidateId = 0;
     let testDuplicatedCandidateId = 0;
 
-    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '5s' });
-    const adminToken = jwt.sign({ username: "backendUnitTestAdmin" }, process.env.JWT_SECRET, { expiresIn: '5s' });
+    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '30s' });
+    const adminToken = jwt.sign({ username: "backendUnitTestAdmin" }, process.env.JWT_SECRET, { expiresIn: '30s' });
 
-    it('Get all candidate information', function (done) {
+    it('36. Get all candidate information', function (done) {
         chai.request(app)
             .get('/candidate/all')
             .end(function (err, res) {
@@ -610,7 +612,7 @@ describe('Testing /candidate endpoint', function () {
             });
     });
 
-    it('Get a candidate information', function (done) {
+    it('37. Get a candidate information', function (done) {
         chai.request(app)
             .get('/candidate/id=1')
             .set("Authorization", `Bearer ${token}`)
@@ -620,7 +622,7 @@ describe('Testing /candidate endpoint', function () {
                 done();
             });
     });
-    it('Get a candidate information with invalid id', function (done) {
+    it('38. Get a candidate information with invalid id', function (done) {
         chai.request(app)
             .get('/candidate/id=null')
             .set("Authorization", `Bearer ${token}`)
@@ -631,7 +633,7 @@ describe('Testing /candidate endpoint', function () {
                 done();
             });
     });
-    it('Get a candidate information with ID does not exist', function (done) {
+    it('39. Get a candidate information with ID does not exist', function (done) {
         chai.request(app)
             .get('/candidate/id=58373')
             .set("Authorization", `Bearer ${token}`)
@@ -642,7 +644,7 @@ describe('Testing /candidate endpoint', function () {
                 done();
             });
     });
-    it('Create a candidate', function (done) {
+    it('40. Create a candidate', function (done) {
 
         chai.request(app)
             .post('/candidate/create')
@@ -658,7 +660,7 @@ describe('Testing /candidate endpoint', function () {
             });
 
     });
-    it('Create a duplicated candidate', function (done) {
+    it('41. Create a duplicated candidate', function (done) {
 
         chai.request(app)
             .post('/candidate/create')
@@ -674,7 +676,7 @@ describe('Testing /candidate endpoint', function () {
             });
 
     });
-    it('Create a candidate with image missing', function (done) {
+    it('42. Create a candidate with image missing', function (done) {
 
         chai.request(app)
             .post('/candidate/create')
@@ -690,7 +692,7 @@ describe('Testing /candidate endpoint', function () {
 
     });
 
-    it('Modify a candidate', function (done) {
+    it('43. Modify a candidate', function (done) {
 
         chai.request(app)
             .put(`/candidate/update/id=${testCandidateId}`)
@@ -705,7 +707,7 @@ describe('Testing /candidate endpoint', function () {
 
     });
 
-    it('Modify a candidate with invalid id', function (done) {
+    it('44. Modify a candidate with invalid id', function (done) {
 
         chai.request(app)
             .put("/candidate/update/id=null")
@@ -721,7 +723,7 @@ describe('Testing /candidate endpoint', function () {
 
     });
 
-    it('Modify a candidate with id does not exist', function (done) {
+    it('45. Modify a candidate with id does not exist', function (done) {
 
         chai.request(app)
             .put("/candidate/update/id=35433")
@@ -737,7 +739,7 @@ describe('Testing /candidate endpoint', function () {
 
     });
 
-    it('Delete a candidate', function (done) {
+    it('46. Delete a candidate', function (done) {
 
         chai.request(app)
             .delete(`/candidate/delete/id=${testCandidateId}`)
@@ -750,7 +752,7 @@ describe('Testing /candidate endpoint', function () {
 
     });
 
-    it('Delete a duplicated candidate', function (done) {
+    it('47. Delete a duplicated candidate', function (done) {
         chai.request(app)
             .delete(`/candidate/delete/id=${testDuplicatedCandidateId}`)
             .set("Authorization", `Bearer ${adminToken}`)
@@ -761,7 +763,7 @@ describe('Testing /candidate endpoint', function () {
             });
     });
 
-    it('Delete a candidate with invalid id', function (done) {
+    it('48. Delete a candidate with invalid id', function (done) {
         chai.request(app)
             .delete("/candidate/delete/id=null")
             .set("Authorization", `Bearer ${adminToken}`)
@@ -773,7 +775,7 @@ describe('Testing /candidate endpoint', function () {
             });
     });
 
-    it('Delete a candidate with id does not exist', function (done) {
+    it('49. Delete a candidate with id does not exist', function (done) {
         chai.request(app)
             .delete("/candidate/delete/id=46346")
             .set("Authorization", `Bearer ${adminToken}`)
