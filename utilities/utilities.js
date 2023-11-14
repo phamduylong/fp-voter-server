@@ -49,19 +49,32 @@ const authorizedAdmin = async (req, res, next) => {
             if (tokenIsInactive || currentTokenExpired) {
                 return res.status(401).json({ error: 'Session has expired. Please log in again.' });
             }
-            if(decodedToken.userId < 0 || decodedToken.userId === undefined || decodedToken.userId === null) {
+            if(!numberIsNegativeOrEmpty(decodedToken.userId)) {
+                User.find({ username: decodedToken.userId }).then((user) => {
+                    if(!user[0].isAdmin) {
+                        return res.status(403).json({ error: 'You are not authorized to access this page.' });
+                    }
+                }).catch((err) => {
+                    logger.error("Failed to get user information. Error: ", err);
+                    return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
+                });
+                
+                next();
+            } else if (!numberIsNegativeOrEmpty(decodedToken.username)) {
+                User.find({ username: decodedToken.username }).then((user) => {
+                    if(!user[0].isAdmin) {
+                        return res.status(403).json({ error: 'You are not authorized to access this page.' });
+                    }
+                }).catch((err) => {
+                    logger.error("Failed to get user information. Error: ", err);
+                    return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
+                });
+                
+                next();
+            } else {
                 logger.error("User ID is missing from token!");
                 return res.status(401).json({ error: 'Session token was malformed. Please log in again.' });
             }
-            User.find({ id: decodedToken.userId }).then((user) => {
-                if(!user[0].isAdmin) {
-                    return res.status(403).json({ error: 'You are not authorized to access this page.' });
-                }
-            }).catch((err) => {
-                logger.error("Failed to get user information. Error: ", err);
-                return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
-            });
-            next();
         } catch (err) {
             // in theory, this should not happen for ordinary users
             return res.status(401).json({ error: 'JWT malformed' });
@@ -106,6 +119,10 @@ function checkUserValidations(username, password){
     const passwordRegex = new RegExp(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&+=!*_])([A-Za-z\d@#$%^&+=!*_]){8,20}$/);
     const isPwdMatch = passwordRegex.test(password);
     return (isUsernameMatch && isPwdMatch)
+}
+
+function numberIsNegativeOrEmpty(value){
+    return (value === undefined || value === null || value < 0)
 }
 
 module.exports = {authorizedOrdinaryUser, authorizedAdmin, checkUserValidations}
