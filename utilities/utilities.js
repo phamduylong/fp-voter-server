@@ -1,4 +1,4 @@
-const JWT = require('../models/JWT');
+const ExpiredJWT = require('../models/ExpiredJWT');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const dotenv = require('dotenv');
@@ -16,6 +16,7 @@ const authorizedOrdinaryUser = async (req, res, next) => {
             if (tokenIsInactive || currentTokenExpired) {
                 return res.status(401).json({ error: 'Session has expired. Please log in again.' });
             }
+            req.userId = decodedToken.userId;
             next();
         } catch (err) {
             logger.error("Failed to verify token. Error: ", err);
@@ -69,7 +70,7 @@ const authorizedAdmin = async (req, res, next) => {
                     logger.error("Failed to get user information. Error: ", err);
                     return res.status(500).send({ error: "Failed to authorize. Please log out and try again!" });
                 });
-                
+                req.userId = decodedToken.userId;
                 next();
             } else {
                 logger.error("User ID is missing from token!");
@@ -87,10 +88,10 @@ const authorizedAdmin = async (req, res, next) => {
 };
 
 async function deleteExpiredTokens() {
-    JWT.find({}).then((tokens) => {
+    ExpiredJWT.find({}).then((tokens) => {
         for(const token of tokens) {
             if(token.expiryTime < Date.now()) {
-                JWT.deleteOne({_id: token._id}).catch((err) => {
+                ExpiredJWT.deleteOne({_id: token._id}).catch((err) => {
                     logger.error("Failed to delete expired token: ", err);
                 });
             }
@@ -98,12 +99,12 @@ async function deleteExpiredTokens() {
         logger.info("Expired tokens deleted");
     }).catch((err) => {
         logger.error("Failed to delete expired tokens: ", err);
-    });
-    
+    });   
 }
+
 async function checkInactiveToken(token) {
     await deleteExpiredTokens();
-    const inactiveToken = await JWT.find({ token: token });
+    const inactiveToken = await ExpiredJWT.find({ token: token });
     //Check if there's no inactive token
     if (inactiveToken.length === 0) {
         return false;
@@ -122,7 +123,7 @@ function checkUserValidations(username, password){
 }
 
 function numberIsNegativeOrEmpty(value){
-    return (value === undefined || value === null || value < 0)
+    return (value === undefined || value === null || value < 0 || isNaN(value));
 }
 
-module.exports = {authorizedOrdinaryUser, authorizedAdmin, checkUserValidations}
+module.exports = {authorizedOrdinaryUser, authorizedAdmin, checkUserValidations, numberIsNegativeOrEmpty}

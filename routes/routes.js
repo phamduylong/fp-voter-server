@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const User = require('../models/User');
-const JWT = require('../models/JWT');
+const ExpiredJWT = require('../models/ExpiredJWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const {authorizedOrdinaryUser, checkUserValidations} = require('../utilities/utilities');
 const bcrypt = require("bcrypt");
 const logger = require('../utilities/logger');
-
 
 dotenv.config();
 
@@ -93,14 +92,15 @@ router.post('/logout', authorizedOrdinaryUser, async (req, res) => {
         const token = req.headers.authorization?.split(' ')[1];
         const decodedToken = JSON.parse(atob(token.split(".")[1]));
         const expiryTime = (decodedToken.exp * 1000);
-        const inactiveToken = new JWT({ token: token, expiryTime: expiryTime });
+        const inactiveToken = new ExpiredJWT({ token: token, expiryTime: expiryTime });
         let tokenSaved = await inactiveToken.save();
         if (tokenSaved != {}) {
             logger.info("Logged out successfully!");
             return res.sendStatus(200);
         }
     } catch(err) {
-        logger.error("An error occured while logging out! Error: ", err);
+        // silent fail
+        logger.error("An error occurred while logging out! Error: ", err);
     }
     return res.sendStatus(401);
 
