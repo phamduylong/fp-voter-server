@@ -70,4 +70,30 @@ userRouter.get("/candidateVoted", authorizedOrdinaryUser, async (req, res) => {
     }
 });
 
+userRouter.patch("/vote", authorizedOrdinaryUser, async (req, res) => {
+    const userId = req.userId;
+    const candidateId = req.body.candidateId;
+    if (numberIsNegativeOrEmpty(userId) || numberIsNegativeOrEmpty(candidateId)) {
+        logger.error(`Failed to vote. Either user id or candidate id was invalid. User id: ${userId ?? "was errornous"}, 
+        candidate id ${candidateId ?? "was erronous"}`);
+        return res.status(400).send({ error: "Either user id or candidate id was invalid. Please try again and contact admin if the issue persists."});
+    }
+
+    const candidate = await Candidate.findOne({ id: candidateId });
+    if(!candidate) {
+        logger.error(`Cannot find candidate with id ${candidateId}`);
+        return res.status(404).send({ error: "Cannot find candidate with such id." });
+    }
+
+    User.findOneAndUpdate({id: userId}, { candidateVotedId: candidateId }).then(updateResult => {
+        if(updateResult) {
+            logger.info(`Vote casted successfully. User ${updateResult.username} voted for candidate ${candidate.name}`);
+            return res.status(200).send({ message: "Vote casted successfully." });
+        }
+    }).catch((err) => {
+        logger.error(err);
+        return res.status(500).send({ error: `Unknown error occurred: ${err}` });
+    });
+})
+
 module.exports = userRouter;
