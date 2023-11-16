@@ -51,7 +51,7 @@ const authorizedAdmin = async (req, res, next) => {
                 return res.status(401).json({ error: 'Session has expired. Please log in again.' });
             }
             if(!numberIsNegativeOrEmpty(decodedToken.userId)) {
-                User.find({ username: decodedToken.userId }).then((user) => {
+                User.find({ id: decodedToken.userId }).then((user) => {
                     if(!user[0].isAdmin) {
                         return res.status(403).json({ error: 'You are not authorized to access this page.' });
                     }
