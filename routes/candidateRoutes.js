@@ -107,7 +107,7 @@ candidateRouter.post('/create', authorizedAdmin, upload.single('file'), async (r
 
 candidateRouter.put('/update/id=:id', authorizedAdmin, upload.single('file'), async (req, res) => {
     logger.debug("Updating candidate with id:", req.params.id);
-    if(numberIsNegativeOrEmpty(req.params.id)) {
+    if(numberIsNegativeOrEmpty(req.params.id) || !req.body.name || !req.body.message ) {
         logger.error(`Candidate update request malformed. ID: ${req.params.id}, Name: ${req.body.name}, Message: ${req.body.message}`);
         return res.status(400).send({ error: "Request malformed. Either id parameter or request body is invalid! " });
     }
