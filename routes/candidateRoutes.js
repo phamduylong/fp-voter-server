@@ -4,7 +4,7 @@ const multer = require('multer');
 const dotenv = require('dotenv');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const Candidate = require('../models/Candidate');
-const { authorizedOrdinaryUser, authorizedAdmin } = require('../utilities/utilities');
+const { authorizedOrdinaryUser, authorizedAdmin, numberIsNegativeOrEmpty} = require('../utilities/utilities');
 const logger = require('../utilities/logger');
 
 const storage = multer.memoryStorage();
@@ -22,7 +22,7 @@ const BUCKET_NAME = process.env.BUCKET_NAME;
 
 candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
     const candidateId = req.params.id;
-    if (candidateId === undefined || candidateId === null || candidateId < 0 || isNaN(candidateId) ) {
+    if (numberIsNegativeOrEmpty(candidateId) ) {
         logger.error(`Candidate id ${candidateId} is invalid!`);
         return res.status(400).send({ error: "Candidate information cannot be found. Please try again!" });
     }
@@ -107,7 +107,7 @@ candidateRouter.post('/create', authorizedAdmin, upload.single('file'), async (r
 
 candidateRouter.put('/update/id=:id', authorizedAdmin, upload.single('file'), async (req, res) => {
     logger.debug("Updating candidate with id:", req.params.id);
-    if(!req.params.id || !req.body.name || !req.body.message || isNaN(req.params.id)) {
+    if(numberIsNegativeOrEmpty(req.params.id) || !req.body.name || !req.body.message ) {
         logger.error(`Candidate update request malformed. ID: ${req.params.id}, Name: ${req.body.name}, Message: ${req.body.message}`);
         return res.status(400).send({ error: "Request malformed. Either id parameter or request body is invalid! " });
     }
@@ -151,7 +151,7 @@ candidateRouter.put('/update/id=:id', authorizedAdmin, upload.single('file'), as
 candidateRouter.delete('/delete/id=:id', authorizedAdmin, async (req, res) => {
     const candidateId = req.params.id;
 
-    if (!candidateId || candidateId < 0 || isNaN(candidateId) ) {
+    if (numberIsNegativeOrEmpty(candidateId) ) {
         logger.error(`Candidate id ${candidateId} is invalid!`);
         return res.status(400).send({ error: "Candidate information cannot be found. Id was invalid!" });
     }

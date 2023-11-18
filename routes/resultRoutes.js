@@ -3,6 +3,7 @@ const resultRouter = express.Router();
 const User = require('../models/User');
 const Candidate = require('../models/Candidate');
 const logger = require('../utilities/logger');
+const {numberIsNegativeOrEmpty} = require("../utilities/utilities");
 
 resultRouter.get('/all', async (req, res) => {
     try {
@@ -57,7 +58,7 @@ resultRouter.get('/candidateId=:id', async (req, res) => {
     const candidateId = req.params.id;
     logger.info('Requested result for candidate with ID:', candidateId);
 
-    if (!candidateId || isNaN(candidateId) || candidateId < 0) {
+    if (numberIsNegativeOrEmpty(candidateId)) {
         logger.error(`Invalid candidate ID: ${candidateId}`);
         return res.status(404).send({ error: "Invalid candidate ID. Please provide a valid candidate ID." });
     }
