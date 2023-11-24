@@ -40,7 +40,7 @@ candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
             return res.status(200).send(result);
         }
         logger.error("Couldn't find candidate with id: ", candidateId);
-        return res.status(400).send({ error: "User Not Found!" });
+        return res.status(404).send({ error: "User Not Found!" });
     } catch (error) {
         logger.error("Failed to get candidate information. Error: ", error);
         return res.status(500).send({ error: error });
