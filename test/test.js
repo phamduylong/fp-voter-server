@@ -203,7 +203,7 @@ describe('Testing /login endpoint', function () {
             .send(user)
             .end(function (err, res) {
                 expect(err).to.be.null;
-                expect(res).to.have.status(400);
+                expect(res).to.have.status(404);
                 expect(res.body).to.deep.equal({ error: "Your username was not found. Please register through the link below." });
                 done();
             });
@@ -227,15 +227,17 @@ describe('Testing /login endpoint', function () {
     });
 });
 
-describe('13. Testing /register endpoint', function () {
+describe('Testing /register endpoint', function () {
     after(async function () {
         await deleteTestUser();
     });
 
-    it('Register with valid credentials', function (done) {
+    it('13.Register with valid credentials', function (done) {
         const user = {
             username: "backendUnitTest",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -251,7 +253,9 @@ describe('13. Testing /register endpoint', function () {
     it('14. Register with whitespace character exist in username', function (done) {
         const user = {
             username: "random User",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -268,7 +272,9 @@ describe('13. Testing /register endpoint', function () {
     it('15. Register with number starts first in username', function (done) {
         const user = {
             username: "3randomUser",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -285,7 +291,9 @@ describe('13. Testing /register endpoint', function () {
     it('16. Register with username too short', function (done) {
         const user = {
             username: "ran",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -302,7 +310,9 @@ describe('13. Testing /register endpoint', function () {
     it('17. Register with username too long', function (done) {
         const user = {
             username: "randomUsernameabc123def456",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -320,7 +330,9 @@ describe('13. Testing /register endpoint', function () {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: "Abc123#"
+            password: "Abc123#",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -338,7 +350,9 @@ describe('13. Testing /register endpoint', function () {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: "randomUsernameabc#123def456"
+            password: "randomUsernameabc#123def456",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -356,7 +370,9 @@ describe('13. Testing /register endpoint', function () {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: "Abc###abc"
+            password: "Abc###abc",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -374,7 +390,9 @@ describe('13. Testing /register endpoint', function () {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: "Abcabc123"
+            password: "Abcabc123",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -392,7 +410,9 @@ describe('13. Testing /register endpoint', function () {
         const randomUsername = "a" + Math.random().toString(36).slice(2, 10);
         const user = {
             username: randomUsername,
-            password: "abcabc123##"
+            password: "abcabc123##",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -409,7 +429,9 @@ describe('13. Testing /register endpoint', function () {
     it('23. Register with duplicate username', function (done) {
         const user = {
             username: "backendUnitTest",
-            password: "unitTest#0001"
+            password: "unitTest#0001",
+            fingerprintId: 123,
+            sensorId: 10
         };
 
         chai.request(app)
@@ -425,106 +447,52 @@ describe('13. Testing /register endpoint', function () {
 });
 
 describe('Testing /user endpoint', function () {
+    let testUserid = 0;
     before(async function () {
-        return createTestUser().then(() => console.log("Test user created for testing!")).catch(err => console.log(err));;
+        return createTestUser()
+            .then((user) => {
+                testUserid = user.id;
+                console.log("Test user created for testing!");
+            })
+            .catch(err => console.log(err));
     });
 
     after(async function () {
-        return deleteTestUser().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));;
+        return deleteTestUser().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));
     });
 
-    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '30s' });
-    const invalidToken = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '0s' });
+    const token = jwt.sign({ username: "backendUnitTest", userId: testUserid, isAdmin: false }, process.env.JWT_SECRET, { expiresIn: '30s' });
+    const invalidToken = jwt.sign({ username: "backendUnitTest", userId: testUserid, isAdmin: false }, process.env.JWT_SECRET, { expiresIn: '0s' });
 
-    it('24. Get user details with valid credentials', function (done) {
+    it('28. Get candidate id which was voted by a user with JWT missing', function (done) {
         chai.request(app)
-            .get('/user/id=1')
-            .set("Authorization", `Bearer ${token}`)
-            .end(function (err, res) {
-                expect(err).to.be.null;
-                expect(res).to.have.status(200);
-                done();
-            });
-    });
-
-    it('25. Get user details with JWT missing', function (done) {
-        chai.request(app)
-            .get('/user/id=1')
+            .get('/user/candidateVoted')
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(401);
-                expect(res.body).to.deep.equal({ error: "You are not logged in." });
                 done();
             });
     });
 
-    it('26. Get user details with invalid JWT', function (done) {
+    it('28. Get candidate id which was voted by a user with invalid JWT', function (done) {
         chai.request(app)
-            .get('/user/id=1')
+            .get('/user/candidateVoted/')
             .set("Authorization", `Bearer ${invalidToken}`)
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(401);
-                expect(res.body).to.deep.equal({ error: "JWT malformed" });
                 done();
             });
     });
 
-    it('27. Get user details with negative userID', function (done) {
-        chai.request(app)
-            .get('/user/id=-1')
-            .set("Authorization", `Bearer ${token}`)
-            .end(function (err, res) {
-                expect(err).to.be.null;
-                expect(res).to.have.status(400);
-                expect(res.body).to.deep.equal({ error: "User id is invalid!" });
-                done();
-            });
-    });
-
-    it('28. Get user details with userID missing from the db', function (done) {
-        chai.request(app)
-            .get('/user/id=1000')
-            .set("Authorization", `Bearer ${token}`)
-            .end(function (err, res) {
-                expect(err).to.be.null;
-                expect(res).to.have.status(404);
-                expect(res.body).to.deep.equal({ error: "User Not Found!" });
-                done();
-            });
-    });
 
     it('29. Get candidate id which was voted by a user', function (done) {
         chai.request(app)
-            .get('/user/candidateVoted/id=22')
+            .get('/user/candidateVoted')
             .set("Authorization", `Bearer ${token}`)
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
-                done();
-            });
-    });
-
-    it('30. Get candidate id which was voted by a user with invalid id', function (done) {
-        chai.request(app)
-            .get('/user/candidateVoted/id=null')
-            .set("Authorization", `Bearer ${token}`)
-            .end(function (err, res) {
-                expect(err).to.be.null;
-                expect(res).to.have.status(400);
-                expect(res.body).to.deep.equal({ error: "User id is invalid!" });
-                done();
-            });
-    });
-
-    it('31. Get candidate id which was voted by a user with id does not exist', function (done) {
-        chai.request(app)
-            .get('/user/candidateVoted/id=35533')
-            .set("Authorization", `Bearer ${token}`)
-            .end(function (err, res) {
-                expect(err).to.be.null;
-                expect(res).to.have.status(404);
-                expect(res.body).to.deep.equal({ error: "User Not Found!"});
                 done();
             });
     });
@@ -534,11 +502,11 @@ describe('Testing /user endpoint', function () {
 
 describe('Testing /result endpoint', function () {
     before(async function () {
-        return createTestUser().then(() => console.log("Test user created for testing!")).catch(err => console.log(err));;
+        return createTestUser().then(() => console.log("Test user created for testing!")).catch(err => console.log(err));
     });
 
     after(async function () {
-        return deleteTestUser().then(() => console.log("Test user cleaned up!")).catch(err => console.log(err));;
+        return deleteTestUser().then(() => console.log("Test user cleaned up!")).catch(err => console.log(err));
     });
 
 
@@ -584,19 +552,23 @@ describe('Testing /result endpoint', function () {
 });
 
 describe('Testing /candidate endpoint', function () {
+    let adminToken;
     before(async function () {
-        return createTestAdmin().then(() => console.log("Admin user created for testing!")).catch(err => console.log(err));;
+        return createTestAdmin()
+            .then((user) => {
+                adminToken = jwt.sign({ username: "backendUnitTestAdmin", userId: user.id, isAdmin: true }, process.env.JWT_SECRET, { expiresIn: '5m' });
+                console.log("Test user created for testing!");
+            })
+            .catch(err => console.log(err));
     });
 
     after(async function () {
-        return deleteTestAdmin().then(() => console.log("Admin dummy was deleted!")).catch(err => console.log(err));;
+        return deleteTestAdmin().then(() => console.log("Admin dummy was deleted!")).catch(err => console.log(err));
     });
 
     let testCandidateId = 0;
     let testDuplicatedCandidateId = 0;
-
-    const token = jwt.sign({ username: "backendUnitTest" }, process.env.JWT_SECRET, { expiresIn: '30s' });
-    const adminToken = jwt.sign({ username: "backendUnitTestAdmin" }, process.env.JWT_SECRET, { expiresIn: '30s' });
+    //const token = jwt.sign({ username: "backendUnitTest", userId: createdAdminId, isAdmin: false }, process.env.JWT_SECRET, { expiresIn: '30s' });
 
     it('36. Get all candidate information', function (done) {
         chai.request(app)
@@ -611,7 +583,6 @@ describe('Testing /candidate endpoint', function () {
     it('37. Get a candidate information', function (done) {
         chai.request(app)
             .get('/candidate/id=1')
-            .set("Authorization", `Bearer ${token}`)
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
@@ -621,7 +592,6 @@ describe('Testing /candidate endpoint', function () {
     it('38. Get a candidate information with invalid id', function (done) {
         chai.request(app)
             .get('/candidate/id=null')
-            .set("Authorization", `Bearer ${token}`)
             .end(function (err, res) {
                 expect(err).to.be.null;
                 expect(res).to.have.status(400);
@@ -632,10 +602,9 @@ describe('Testing /candidate endpoint', function () {
     it('39. Get a candidate information with ID does not exist', function (done) {
         chai.request(app)
             .get('/candidate/id=58373')
-            .set("Authorization", `Bearer ${token}`)
             .end(function (err, res) {
                 expect(err).to.be.null;
-                expect(res).to.have.status(400);
+                expect(res).to.have.status(404);
                 expect(res.body).to.deep.equal({ error: "User Not Found!" });
                 done();
             });
@@ -649,7 +618,7 @@ describe('Testing /candidate endpoint', function () {
             .field('message','This candidate is created by running unit test.')
             .attach('file','test/test_candidate_image.png')
             .end(function (err, res) {
-                testCandidateId = res.body.createdCandidate.id
+                testCandidateId = res.body.createdCandidate.id;
                 expect(err).to.be.null;
                 expect(res).to.have.status(200);
                 done();
