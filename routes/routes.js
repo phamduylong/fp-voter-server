@@ -106,4 +106,8 @@ router.post('/logout', authorizedOrdinaryUser, async (req, res) => {
 
 });
 
+router.get('/healthcheck', (req, res) => {
+    return res.status(200).send();
+});
+
 module.exports = router;
