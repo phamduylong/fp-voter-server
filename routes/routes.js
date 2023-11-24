@@ -76,8 +76,8 @@ router.post('/login', async (req, res) => {
             logger.fatal(`Username ${username} was duplicated in the database!`);
             return res.status(500).send({ error: "Your username was duplicated. Please contact an admin to fix this!" });
         } else if (user.length === 0) {
-            logger.error(`One or more user fields do not match with the database`);
-            return res.status(400).json({ error: "Users are required to have username, fingerprintId and sensorId. At least one of these do not match with the database ." });
+            logger.error(`User with username ${username} not found`);
+            return res.status(404).json({ error: "User not found!" });
         }
     } catch (error) {
         if(JWT_KEY === undefined || JWT_KEY === "") {
