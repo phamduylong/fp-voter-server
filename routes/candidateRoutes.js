@@ -20,7 +20,7 @@ const s3 = new S3Client({
 });
 const BUCKET_NAME = process.env.BUCKET_NAME;
 
-candidateRouter.get('/id=:id', authorizedOrdinaryUser, async (req, res) => {
+candidateRouter.get('/id=:id', async (req, res) => {
     const candidateId = req.params.id;
     if (numberIsNegativeOrEmpty(candidateId) ) {
         logger.error(`Candidate id ${candidateId} is invalid!`);
