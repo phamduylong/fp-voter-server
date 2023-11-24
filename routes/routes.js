@@ -13,10 +13,13 @@ dotenv.config();
 const JWT_KEY = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
+    console.log(req.body);
     const username = req.body.username;
     let password = req.body.password;
     const fingerprintId = req.body.fingerprintId;
     const sensorId = req.body.sensorId;
+    console.log(username);
+    console.log(password);
     if(!checkUserValidations(username, password)){
         logger.error("Username or password entered does not match pattern required!");
         return res.status(400).send({ error: "Username or password entered does not match pattern required!" });
