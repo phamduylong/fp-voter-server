@@ -5,7 +5,7 @@ const ExpiredJWT = require('../models/ExpiredJWT');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 const {authorizedOrdinaryUser, checkUserValidations, numberIsNegativeOrEmpty} = require('../utilities/utilities');
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const logger = require('../utilities/logger');
 
 dotenv.config();
