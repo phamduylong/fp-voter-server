@@ -10,7 +10,8 @@
     "build": "node app.js",
     "dev": "nodemon app.js",
     "production": "pm2-runtime app.js -i max",
-    "test": "mocha test/test.js --retries 2 --timeout 10000 --allow-uncaught"
+    "test": "mocha test/test.js --retries 2 --timeout 10000 --allow-uncaught",
+    "vercel-build": "echo 'vercel-build'"
   },
   "author": "",
   "license": "ISC",
