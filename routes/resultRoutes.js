@@ -5,7 +5,17 @@ const Candidate = require('../models/Candidate');
 const logger = require('../utilities/logger');
 const {numberIsNegativeOrEmpty} = require("../utilities/utilities");
 
-resultRouter.get('/all', async (req, res) => {
+const afterPublishDate = (req, res, next) => {
+    const publishDate = new Date("December 8, 2023 15:00:00").getTime();
+    let remainingTime = publishDate - Date.now();
+    if (remainingTime > 0) {
+        logger.info(`Voting results are not yet available. Remaining time: ${remainingTime}ms`);
+        return res.status(204).send();
+    }
+    next();
+};
+
+resultRouter.get('/all', afterPublishDate, async (req, res) => {
     try {
         logger.info("Retrieving the votes voted by the user");
 
@@ -54,7 +64,7 @@ resultRouter.get('/all', async (req, res) => {
     }
 });
 
-resultRouter.get('/candidateId=:id', async (req, res) => {
+resultRouter.get('/candidateId=:id', afterPublishDate, async (req, res) => {
     const candidateId = req.params.id;
     logger.info('Requested result for candidate with ID:', candidateId);
 
