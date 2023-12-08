@@ -15,7 +15,7 @@ const afterPublishDate = (req, res, next) => {
     next();
 };
 
-resultRouter.get('/all', afterPublishDate, async (req, res) => {
+resultRouter.get('/all', async (req, res) => {
     try {
         logger.info("Retrieving the votes voted by the user");
 
